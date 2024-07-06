@@ -1,17 +1,58 @@
-const express = require('express')
-const app = express()
-const port = 4000
+const express = require("express");
+const dotenv = require("dotenv");
+const mongoose = require("mongoose");
+// const { getClientAndCollection } = require("./Src/DB");
+const { getClientAndCollection } = require("./Src/DB/db");
+const app = express();
+const cors = require('cors');
 
+dotenv.config();
 
-const transactions = require('./routes/transactions');
+// Import routes
 
-app.use(express.json());
-app.get('/', (req, res) => {
-  res.send('Hello World!')
-})
+const authRoute = require("./Src/Routes/auth");
 
-app.use('/api/ransactions', transactions);
+// DATABASE
+getClientAndCollection();
 
-app.listen(port, () => {
-  console.log(`Example app listening on port ${port}`)
-})
+const db = mongoose.connection;
+
+db.on("error", (error) => {
+  console.error("MongoDB connection error:", error);
+});
+
+db.once("open", () => {
+  console.log("Connected to MongoDB");
+});
+
+// Optionally, you can also handle the "disconnected" event
+db.on("disconnected", () => {
+  console.warn("MongoDB disconnected");
+});
+
+process.on("SIGINT", () => {
+  mongoose.connection.close(() => {
+    console.log("MongoDB connection closed through app termination");
+    process.exit(0);
+  });
+});
+
+// Middlewares
+
+const corsOptions = {
+  origin: [
+    "https://urban-space-goldfish-v9w74www7jxfp67q-5173.app.github.dev",
+    // "*",
+  ],
+  credentials: true, //access-control-allow-credentials:true
+  // optionSuccessStatus: 200,
+};
+app.use(cors(corsOptions));
+app.use(express.json())
+
+app.use("/api", authRoute);
+
+const PORT = process.env.PORT || 4000;
+app.listen(PORT, () => {
+  console.log(`Server is listening on port ${PORT}`);
+});
