@@ -59,6 +59,10 @@ app.use(express.json());
 
 app.use("/api", authRoute);
 
+app.get("/Hi", (req, res) => {
+  res.send("Hello World!");
+});
+
 app.use(express.static("public"));
 
 app.get("*", (req, res) =>
