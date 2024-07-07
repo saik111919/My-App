@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 
 const TransactionSchema = new mongoose.Schema({
-    text: {
+    title: {
         type: String,
         trim: true,
         required: [true, 'Please add some text']

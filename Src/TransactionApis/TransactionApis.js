@@ -1,19 +1,64 @@
-exports.addTransactions = (req, res) => {
+const Transaction = require('../models/TransactionModal');
+
+exports.addTransactions = async (req, res) => {
     const { amount, title, type } = req.body;
-    console.log('trigger');
+
     // Validate data (optional)
     if (!amount || !title || !type) {
         return res.status(400).send({ message: 'Missing required data (amount, title, type)' });
     }
 
-    // Process the data here (e.g., store it in a database)
-    console.log(`Received data: amount: ${amount}, title: ${title}, type: ${type}`);
+    try {
+        const newTransaction = new Transaction({
+            title: title,
+            amount: amount,
+            type: type,
+            createdAt: new Date()
+        });
 
-    // Send a success response
-    res.status(201).send({ message: 'Data received successfully' });
-}
+        const savedTransaction = await newTransaction.save();
 
-exports.getTransactions = (req, res) => {
-    res.send('Hello World!')
-    console.log("Hello");
-}
+        console.log(`Received data: amount: ${amount}, title: ${title}, type: ${type}`, 'DB', savedTransaction);
+
+        // Send a success response
+        res.status(201).send({ message: 'Data received successfully' });
+    } catch (err) {
+        console.error(err);
+        res.status(500).send({ message: 'Failed to save transaction' });
+    }
+};
+
+
+exports.getTransactions = async (req, res) => {
+    try {
+        const transactions = await Transaction.find();
+        res.status(200).json(transactions);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: 'Failed to fetch transactions' });
+    }
+};
+
+exports.deleteTransaction = async (req, res) => {
+    const { id } = req.params;
+
+    try {
+        const transaction = await Transaction.findById(id);
+
+        if (!transaction) {
+            return res.status(404).json({ message: 'Transaction not found' });
+        }
+
+        console.log(transaction);
+        const data = {
+            title: transaction.title,
+            amount: transaction.amount,
+            type: transaction.type,
+        }
+        await transaction.deleteOne();
+        res.status(200).json({ data: data, message: 'Transaction deleted successfully' });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: 'Failed to delete transaction' });
+    }
+};

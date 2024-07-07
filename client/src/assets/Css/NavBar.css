@@ -1,0 +1,8 @@
+/* box-shadow: inset [horizontal offset] [vertical offset] [blur radius] [spread radius] [color]; */
+.page-body {
+  height: 94dvh;
+  overflow-x: hidden;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  box-shadow: inset 1px 1px 6px 2px rgb(0 0 0 / 39%);
+}

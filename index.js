@@ -5,6 +5,7 @@ const mongoose = require("mongoose");
 const { getClientAndCollection } = require("./Src/DB/db");
 const app = express();
 const cors = require('cors');
+const path = require('path');
 
 dotenv.config();
 
@@ -42,7 +43,8 @@ process.on("SIGINT", () => {
 const corsOptions = {
   origin: [
     "https://urban-space-goldfish-v9w74www7jxfp67q-5173.app.github.dev",
-    // "*",
+    "http://localhost:5173",
+    "*",
   ],
   credentials: true, //access-control-allow-credentials:true
   // optionSuccessStatus: 200,
@@ -51,6 +53,11 @@ app.use(cors(corsOptions));
 app.use(express.json())
 
 app.use("/api", authRoute);
+
+app.use(express.static('client/dist'));
+
+// app.get('*', (req, res) => res.sendFile(path.resolve(__dirname, 'client', 'dist', 'index.html')));
+app.get('*', (req, res) => res.sendFile(path.resolve(__dirname, 'client', 'dist', 'index.html')));
 
 const PORT = process.env.PORT || 4000;
 app.listen(PORT, () => {
