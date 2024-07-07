@@ -12,6 +12,9 @@ const router = express.Router();
 router.post("/login", loginAuthentication);
 
 router.get("/", verifyToken, getTransactions);
+router.get("/Hi", (req, res) => {
+  res.send("Hello World!");
+});
 
 // router.route('/manageTransactions').post(addTransactions).delete(deleteTransaction);
 // Route to handle POST requests to create new transactions
