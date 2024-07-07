@@ -47,6 +47,8 @@ const corsOptions = {
     "http://localhost:4000",
     "http://localhost:5000",
     "https://my-app-one-chi-83.vercel.app",
+    "https://my-app-git-main-vsmh11.vercel.app",
+    "https://my-app-vsmh11.vercel.app",
     "*",
   ],
   credentials: true, //access-control-allow-credentials:true
