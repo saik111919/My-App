@@ -13,7 +13,7 @@ exports.addTransactions = async (req, res) => {
             title: title,
             amount: amount,
             type: type,
-            createdAt: new Date()
+            // createdAt: new Date()
         });
 
         const savedTransaction = await newTransaction.save();
