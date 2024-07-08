@@ -11,11 +11,6 @@ const router = express.Router();
 
 router.post("/login", loginAuthentication);
 
-router.get("/", verifyToken, getTransactions);
-
-// router.route('/manageTransactions').post(addTransactions).delete(deleteTransaction);
-// Route to handle POST requests to create new transactions
-// router.post("/manageTransactions", verifyToken, addTransactions);
 router
   .route("/manageTransactions")
   .post(verifyToken, addTransactions)
@@ -25,3 +20,9 @@ router
 router.delete("/manageTransactions/:id", verifyToken, deleteTransaction);
 
 module.exports = router;
+
+// router.get("/", verifyToken, getTransactions);
+
+// router.route('/manageTransactions').post(addTransactions).delete(deleteTransaction);
+// Route to handle POST requests to create new transactions
+// router.post("/manageTransactions", verifyToken, addTransactions);
