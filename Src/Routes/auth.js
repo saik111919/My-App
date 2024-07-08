@@ -12,13 +12,14 @@ const router = express.Router();
 router.post("/login", loginAuthentication);
 
 router.get("/", verifyToken, getTransactions);
-router.get("/Hi", (req, res) => {
-  res.send("Hello World!");
-});
 
 // router.route('/manageTransactions').post(addTransactions).delete(deleteTransaction);
 // Route to handle POST requests to create new transactions
-router.post("/manageTransactions", verifyToken, addTransactions);
+// router.post("/manageTransactions", verifyToken, addTransactions);
+router
+  .route("/manageTransactions")
+  .post(verifyToken, addTransactions)
+  .get(verifyToken, getTransactions);
 
 // Route to handle DELETE requests to delete transactions by ID
 router.delete("/manageTransactions/:id", verifyToken, deleteTransaction);
