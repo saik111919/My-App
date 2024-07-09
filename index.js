@@ -52,6 +52,7 @@ const corsOptions = {
     "https://my-manga-kohl.vercel.app",
     "https://j09fgs7s-4000.inc1.devtunnels.ms",
     "https://saik111919.github.io/reactapphost/",
+    "https://improved-computing-machine-45694666v4gf7wj5-5173.app.github.dev",
     "*",
   ],
   credentials: true, //access-control-allow-credentials:true
