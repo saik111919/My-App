@@ -41,7 +41,7 @@ process.on("SIGINT", () => {
 // Middlewares
 
 const corsOptions = {
-  origin:  [
+  origin: [
     "https://urban-space-goldfish-v9w74www7jxfp67q-5173.app.github.dev",
     "http://localhost:5173",
     "http://localhost:4000",
@@ -54,6 +54,7 @@ const corsOptions = {
     "https://saik111919.github.io/",
     "https://improved-computing-machine-45694666v4gf7wj5-5173.app.github.dev",
     "https://reactapphost.vercel.app",
+    "https://saik111919.github.io",
   ],
   credentials: true, //access-control-allow-credentials:true
   // optionSuccessStatus: 200,
