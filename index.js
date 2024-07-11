@@ -55,6 +55,7 @@ const corsOptions = {
     "https://improved-computing-machine-45694666v4gf7wj5-5173.app.github.dev",
     "https://reactapphost.vercel.app",
     "https://saik111919.github.io",
+    "http://localhost:5174",
   ],
   credentials: true, //access-control-allow-credentials:true
   // optionSuccessStatus: 200,
@@ -63,10 +64,6 @@ app.use(cors(corsOptions));
 app.use(express.json());
 
 app.use("/api", authRoute);
-
-app.get("/", (req, res) => {
-  res.send("Hello World!");
-});
 
 app.use(express.static("public"));
 
