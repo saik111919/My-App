@@ -4,6 +4,7 @@ const {
   getTransactions,
   deleteTransaction,
   loginAuthentication,
+  getModifiedTransactions,
 } = require("../TransactionApis/TransactionApis");
 const UserModel = require("../models/UserModel");
 const { verifyToken } = require("../middleware/verifyData");
