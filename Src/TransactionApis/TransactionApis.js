@@ -38,52 +38,6 @@ exports.getTransactions = async (req, res) => {
   }
 };
 
-exports.getModifiedTransactions = async (req, res) => {
-  try {
-    const transactions = await Transaction.find();
-
-    // Group transactions by month and year
-    const groupedTransactions = transactions.reduce((acc, transaction) => {
-      const date = new Date(transaction.createdAt);
-      const monthYear = `${date.getFullYear()}-${date.getMonth() + 1}`;
-
-      if (!acc[monthYear]) {
-        acc[monthYear] = {
-          transactions: [],
-          totalCredited: 0,
-          totalSpent: 0,
-        };
-      }
-
-      acc[monthYear].transactions.push(transaction);
-
-      if (transaction.type === "credited") {
-        acc[monthYear].totalCredited += transaction.amount;
-      } else if (transaction.type === "spent") {
-        acc[monthYear].totalSpent += transaction.amount;
-      }
-
-      return acc;
-    }, {});
-
-    // Convert grouped transactions object to an array of { monthYear, transactions, totalCredited, totalSpent, remainingAmount } objects
-    const result = Object.keys(groupedTransactions).map((monthYear) => ({
-      monthYear,
-      transactions: groupedTransactions[monthYear].transactions,
-      totalCredited: groupedTransactions[monthYear].totalCredited,
-      totalSpent: groupedTransactions[monthYear].totalSpent,
-      remainingAmount:
-        groupedTransactions[monthYear].totalCredited -
-        groupedTransactions[monthYear].totalSpent,
-    }));
-
-    res.status(200).json(result);
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: "Failed to fetch transactions" });
-  }
-};
-
 exports.deleteTransaction = async (req, res) => {
   const { id } = req.params;
 
