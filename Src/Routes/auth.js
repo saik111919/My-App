@@ -16,6 +16,7 @@ router
   .post(verifyToken, addTransactions)
   .get(verifyToken, getTransactions);
 
+router.route("/modifiedTransactions").get(verifyToken, getModifiedTransactions);
 // Route to handle DELETE requests to delete transactions by ID
 router.delete("/manageTransactions/:id", verifyToken, deleteTransaction);
 
