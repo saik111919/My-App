@@ -56,6 +56,7 @@ const corsOptions = {
     "https://reactapphost.vercel.app",
     "https://saik111919.github.io",
     "http://localhost:5174",
+    "https://my-app-ebon-omega.vercel.app",
   ],
   credentials: true, //access-control-allow-credentials:true
   // optionSuccessStatus: 200,
