@@ -1,6 +1,7 @@
 const Transaction = require("../models/TransactionModal");
 const jwt = require("jsonwebtoken");
 const UserModel = require("../models/UserModel");
+const bcrypt = require("bcrypt");
 
 exports.addTransactions = async (req, res) => {
   const { amount, title, type } = req.body;
@@ -23,24 +24,11 @@ exports.addTransactions = async (req, res) => {
 
     res.status(201).send({ message: "Data received successfully" });
   } catch (err) {
-    console.error(err);
     res.status(500).send({ message: "Failed to save transaction" });
   }
 };
 
-// exports.getTransactions = async (req, res) => {
-//   try {
-//     const transactions = await Transaction.find({ user: req.user._id });
-//     res.status(200).json(transactions);
-//   } catch (err) {
-//     console.error(err);
-//     res.status(500).json({ message: "Failed to fetch transactions" });
-//   }
-// };
-
 exports.getTransactions = async (req, res) => {
-  console.log("Request:", req);
-
   try {
     // Check if user ID is available
     if (!req.user || !req.user._id) {
@@ -49,11 +37,7 @@ exports.getTransactions = async (req, res) => {
         .json({ message: "User ID is missing from request" });
     }
 
-    console.log("User ID:", req.user._id);
-
     const transactions = await Transaction.find({ user: req.user._id });
-    console.log("Transactions fetched:", transactions);
-
     if (transactions.length === 0) {
       return res
         .status(404)
@@ -84,8 +68,6 @@ exports.getTransactions = async (req, res) => {
       return acc;
     }, {});
 
-    console.log("Grouped transactions:", groupedTransactions);
-
     // Convert grouped transactions object to an array of { monthYear, transactions, totalCredited, totalSpent, remainingAmount } objects
     const result = Object.keys(groupedTransactions).map((monthYear) => ({
       monthYear,
@@ -97,11 +79,8 @@ exports.getTransactions = async (req, res) => {
         groupedTransactions[monthYear].totalSpent,
     }));
 
-    console.log("Result:", result);
-
     res.status(200).json(result);
   } catch (err) {
-    console.error("Error fetching transactions:", err);
     res.status(500).json({ message: "Failed to fetch transactions" });
   }
 };
@@ -122,28 +101,78 @@ exports.deleteTransaction = async (req, res) => {
     await transaction.deleteOne();
     res.status(200).json({ message: "Transaction deleted successfully" });
   } catch (err) {
-    console.error(err);
     res.status(500).json({ message: "Failed to delete transaction" });
   }
 };
 
-exports.loginAuthentication = async (req, res) => {
-  const { mobile } = req.body;
+// exports.loginAuthentication = async (req, res) => {
+//   const { mobile } = req.body;
+
+//   try {
+//     let user = await UserModel.findOne({ mobile });
+
+//     if (!user) {
+//       user = new UserModel({ mobile });
+//       await user.save();
+//     }
+
+//     const token = jwt.sign({ _id: user._id }, process.env.JWT_SECRET_KEY, {
+//       expiresIn: "7d",
+//     });
+//     res.status(200).send({ token });
+//   } catch (err) {
+//     res.status(500).send({ message: "Failed to login" });
+//   }
+// };
+
+exports.registerUser = async (req, res) => {
+  const { mobile, password } = req.body;
 
   try {
+    // Check if user already exists
     let user = await UserModel.findOne({ mobile });
-
-    if (!user) {
-      user = new UserModel({ mobile });
-      await user.save();
+    if (user) {
+      return res.status(400).send({ message: "User already exists" });
     }
 
+    // Hash the password
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(password, salt);
+
+    // Save the user
+    user = new UserModel({ mobile, password: hashedPassword });
+    await user.save();
+
+    res.status(200).send({ message: "User registered successfully" });
+  } catch (err) {
+    res.status(500).send({ message: "Failed to register user" });
+  }
+};
+
+// Function to handle user login
+exports.loginAuthentication = async (req, res) => {
+  const { mobile, password } = req.body;
+
+  try {
+    // Find the user by mobile
+    let user = await UserModel.findOne({ mobile });
+    if (!user) {
+      return res.status(400).send({ message: "User not found" });
+    }
+
+    // Compare the password
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) {
+      return res.status(400).send({ message: "Invalid credentials" });
+    }
+
+    // Generate a JWT token
     const token = jwt.sign({ _id: user._id }, process.env.JWT_SECRET_KEY, {
       expiresIn: "7d",
     });
-    res.status(200).send({ token });
+
+    res.status(200).send({ token, message: "User logged in successfully" });
   } catch (err) {
-    console.error(err);
     res.status(500).send({ message: "Failed to login" });
   }
 };

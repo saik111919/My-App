@@ -8,7 +8,10 @@ const UserSchema = new mongoose.Schema({
     unique: true,
     trim: true,
   },
-  // Add other user details as needed
+  password: {
+    type: String,
+    required: true,
+  },
 });
 
 module.exports = mongoose.model("User", UserSchema);
