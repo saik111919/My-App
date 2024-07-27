@@ -48,20 +48,28 @@ exports.getTransactions = async (req, res) => {
       return sendResponse(res, 404, "No transactions found for user.");
     }
 
-    const grouped = transactions.reduce((acc, { createdAt, type, amount }) => {
-      const date = new Date(createdAt);
-      const monthYear = `${date.getFullYear()}-${date.getMonth() + 1}`;
+    const grouped = transactions.reduce(
+      (acc, { createdAt, type, amount, title }) => {
+        const date = new Date(createdAt);
+        const monthYear = `${date.getFullYear()}-${date.getMonth() + 1}`;
 
-      if (!acc[monthYear]) {
-        acc[monthYear] = { transactions: [], totalCredited: 0, totalSpent: 0 };
-      }
+        if (!acc[monthYear]) {
+          acc[monthYear] = {
+            transactions: [],
+            totalCredited: 0,
+            totalSpent: 0,
+          };
+        }
 
-      acc[monthYear].transactions.push({ createdAt, type, amount });
-      acc[monthYear][`total${type.charAt(0).toUpperCase() + type.slice(1)}`] +=
-        amount;
+        acc[monthYear].transactions.push({ createdAt, type, amount, title });
+        acc[monthYear][
+          `total${type.charAt(0).toUpperCase() + type.slice(1)}`
+        ] += amount;
 
-      return acc;
-    }, {});
+        return acc;
+      },
+      {}
+    );
 
     const result = Object.entries(grouped).map(([monthYear, data]) => ({
       monthYear,
