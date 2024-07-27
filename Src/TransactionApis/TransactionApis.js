@@ -148,7 +148,7 @@ exports.loginAuthentication = async (req, res) => {
 };
 
 exports.updateUserDetails = async (req, res) => {
-  const { name } = req.body;
+  const { name, image } = req.body;
 
   try {
     const user = await UserModel.findById(req.user._id);
@@ -160,8 +160,19 @@ exports.updateUserDetails = async (req, res) => {
       user.name = name;
     }
 
+    if (image) {
+      user.image = image; // Save the image as a base64 string
+    }
+
+    const payload = {
+      name: user?.name,
+      ...(user.image && {
+        image: user.image, // Convert base64 to image data
+      }),
+    };
+
     await user.save();
-    sendResponse(res, 200, "User details updated successfully.", { user });
+    sendResponse(res, 200, "User details updated successfully.", { payload });
   } catch (err) {
     sendResponse(res, 500, "Failed to update user details.");
   }
@@ -175,6 +186,7 @@ exports.getUserProfile = async (req, res) => {
     }
     sendResponse(res, 200, "User profile retrieved successfully.", {
       name: user.name,
+      image: user.image,
     });
   } catch (err) {
     sendResponse(res, 500, "Failed to retrieve user profile.");
