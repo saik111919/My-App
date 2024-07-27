@@ -164,7 +164,7 @@ exports.updateUserDetails = async (req, res) => {
       user.image = image; // Save the image as a base64 string
     }
 
-    const payload = {
+    const data = {
       name: user?.name,
       ...(user.image && {
         image: user.image, // Convert base64 to image data
@@ -172,7 +172,7 @@ exports.updateUserDetails = async (req, res) => {
     };
 
     await user.save();
-    sendResponse(res, 200, "User details updated successfully.", { payload });
+    sendResponse(res, 200, "User details updated successfully.", { data });
   } catch (err) {
     sendResponse(res, 500, "Failed to update user details.");
   }
@@ -180,7 +180,7 @@ exports.updateUserDetails = async (req, res) => {
 
 exports.getUserProfile = async (req, res) => {
   try {
-    const user = await UserModel.findById(req.user._id).select("name");
+    const user = await UserModel.findById(req.user._id).select("name image");
     if (!user) {
       return sendResponse(res, 404, "User not found.");
     }
