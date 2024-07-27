@@ -6,6 +6,7 @@ const {
   loginAuthentication,
   registerUser,
   updateUserDetails,
+  getUserProfile,
 } = require("../TransactionApis/TransactionApis");
 const UserModel = require("../models/UserModel");
 const { verifyToken } = require("../middleware/verifyData");
@@ -20,6 +21,10 @@ router
   .get(verifyToken, getTransactions);
 
 router.delete("/manageTransactions/:id", verifyToken, deleteTransaction);
-router.patch("/user-data", verifyToken, updateUserDetails);
+// router.patch("/user-data", verifyToken, updateUserDetails);
+router
+  .route("/user-data")
+  .patch(verifyToken, updateUserDetails)
+  .get(verifyToken, getUserProfile);
 
 module.exports = router;

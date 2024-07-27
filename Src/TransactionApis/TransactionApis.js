@@ -166,3 +166,17 @@ exports.updateUserDetails = async (req, res) => {
     sendResponse(res, 500, "Failed to update user details.");
   }
 };
+
+exports.getUserProfile = async (req, res) => {
+  try {
+    const user = await UserModel.findById(req.user._id).select("name");
+    if (!user) {
+      return sendResponse(res, 404, "User not found.");
+    }
+    sendResponse(res, 200, "User profile retrieved successfully.", {
+      name: user.name,
+    });
+  } catch (err) {
+    sendResponse(res, 500, "Failed to retrieve user profile.");
+  }
+};
