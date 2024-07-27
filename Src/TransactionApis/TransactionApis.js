@@ -49,7 +49,7 @@ exports.getTransactions = async (req, res) => {
     }
 
     const grouped = transactions.reduce(
-      (acc, { createdAt, type, amount, title }) => {
+      (acc, { _id, createdAt, type, amount, title }) => {
         const date = new Date(createdAt);
         const monthYear = `${date.getFullYear()}-${date.getMonth() + 1}`;
 
@@ -61,7 +61,13 @@ exports.getTransactions = async (req, res) => {
           };
         }
 
-        acc[monthYear].transactions.push({ createdAt, type, amount, title });
+        acc[monthYear].transactions.push({
+          _id,
+          createdAt,
+          type,
+          amount,
+          title,
+        });
         acc[monthYear][
           `total${type.charAt(0).toUpperCase() + type.slice(1)}`
         ] += amount;
