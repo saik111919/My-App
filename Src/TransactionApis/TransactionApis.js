@@ -146,3 +146,23 @@ exports.loginAuthentication = async (req, res) => {
     sendResponse(res, 500, "Failed to login.");
   }
 };
+
+exports.updateUserDetails = async (req, res) => {
+  const { name } = req.body;
+
+  try {
+    const user = await UserModel.findById(req.user._id);
+    if (!user) {
+      return sendResponse(res, 404, "User not found.");
+    }
+
+    if (name) {
+      user.name = name;
+    }
+
+    await user.save();
+    sendResponse(res, 200, "User details updated successfully.", { user });
+  } catch (err) {
+    sendResponse(res, 500, "Failed to update user details.");
+  }
+};
