@@ -1,35 +1,25 @@
 const express = require("express");
 const dotenv = require("dotenv");
 const mongoose = require("mongoose");
-// const { getClientAndCollection } = require("./Src/DB");
-const { getClientAndCollection } = require("./Src/DB/db");
-const app = express();
-const cors = require("cors");
 const path = require("path");
+const cors = require("cors");
+const { getClientAndCollection } = require("./Src/DB/db");
+const authRoute = require("./Src/Routes/auth");
+const corsOptions = require("./Src/Common/CorsOption");
 
 dotenv.config();
 
-// Import routes
+const app = express();
+const PORT = process.env.PORT || 4000;
 
-const authRoute = require("./Src/Routes/auth");
-
-// DATABASE
+// DATABASE CONNECTION
 getClientAndCollection();
 
 const db = mongoose.connection;
 
-db.on("error", (error) => {
-  console.error("MongoDB connection error:", error);
-});
-
-db.once("open", () => {
-  console.log("Connected to MongoDB");
-});
-
-// Optionally, you can also handle the "disconnected" event
-db.on("disconnected", () => {
-  console.warn("MongoDB disconnected");
-});
+db.on("error", console.error.bind(console, "MongoDB connection error:"));
+db.once("open", () => console.log("Connected to MongoDB"));
+db.on("disconnected", () => console.warn("MongoDB disconnected"));
 
 process.on("SIGINT", () => {
   mongoose.connection.close(() => {
@@ -38,42 +28,16 @@ process.on("SIGINT", () => {
   });
 });
 
-// Middlewares
-
-const corsOptions = {
-  origin: [
-    "https://urban-space-goldfish-v9w74www7jxfp67q-5173.app.github.dev",
-    "http://localhost:5173",
-    "http://localhost:4000",
-    "http://localhost:5000",
-    "https://my-app-one-chi-83.vercel.app",
-    "https://my-app-git-main-vsmh11.vercel.app",
-    "https://my-app-vsmh11.vercel.app",
-    "https://my-manga-kohl.vercel.app",
-    "https://j09fgs7s-4000.inc1.devtunnels.ms",
-    "https://saik111919.github.io/",
-    "https://improved-computing-machine-45694666v4gf7wj5-5173.app.github.dev",
-    "https://reactapphost.vercel.app",
-    "https://saik111919.github.io",
-    "http://localhost:5174",
-    "https://my-app-ebon-omega.vercel.app",
-    "https://bookish-space-journey-jv9w6999gpv25rwg-5173.app.github.dev"
-  ],
-  credentials: true, //access-control-allow-credentials:true
-  // optionSuccessStatus: 200,
-};
+// MIDDLEWARES
 app.use(cors(corsOptions));
 app.use(express.json());
-
 app.use("/api", authRoute);
-
 app.use(express.static("public"));
 
+// SERVE SPA
 app.get("*", (req, res) =>
   res.sendFile(path.resolve(__dirname, "public", "index.html"))
 );
 
-const PORT = process.env.PORT || 4000;
-app.listen(PORT, () => {
-  console.log(`Server is listening on port ${PORT}`);
-});
+// START SERVER
+app.listen(PORT, () => console.log(`Server is listening on port ${PORT}`));

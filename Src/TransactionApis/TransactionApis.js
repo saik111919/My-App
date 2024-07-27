@@ -3,13 +3,24 @@ const jwt = require("jsonwebtoken");
 const UserModel = require("../models/UserModel");
 const bcrypt = require("bcrypt");
 
+// Utility function to handle responses and errors
+const sendResponse = (res, status, message, data = {}) => {
+  res.status(status).send({ message, ...data });
+};
+
+const validateRequestBody = (body, fields) => {
+  return fields.every((field) => body[field] != null);
+};
+
 exports.addTransactions = async (req, res) => {
   const { amount, title, type } = req.body;
 
-  if (!amount || !title || !type) {
-    return res
-      .status(400)
-      .send({ message: "Missing required data (amount, title, type)" });
+  if (!validateRequestBody(req.body, ["amount", "title", "type"])) {
+    return sendResponse(
+      res,
+      400,
+      "Missing required data (amount, title, type)."
+    );
   }
 
   try {
@@ -19,69 +30,48 @@ exports.addTransactions = async (req, res) => {
       type,
       user: req.user._id,
     });
-
-    const savedTransaction = await newTransaction.save();
-
-    res.status(201).send({ message: "Data received successfully" });
+    await newTransaction.save();
+    sendResponse(res, 201, "Data received successfully.");
   } catch (err) {
-    res.status(500).send({ message: "Failed to save transaction" });
+    sendResponse(res, 500, "Failed to save transaction.");
   }
 };
 
 exports.getTransactions = async (req, res) => {
-  try {
-    // Check if user ID is available
-    if (!req.user || !req.user._id) {
-      return res
-        .status(400)
-        .json({ message: "User ID is missing from request" });
-    }
+  if (!req.user?._id) {
+    return sendResponse(res, 400, "User ID is missing from request.");
+  }
 
+  try {
     const transactions = await Transaction.find({ user: req.user._id });
     if (transactions.length === 0) {
-      return res
-        .status(404)
-        .json({ message: "No transactions found for user" });
+      return sendResponse(res, 404, "No transactions found for user.");
     }
 
-    // Group transactions by month and year
-    const groupedTransactions = transactions.reduce((acc, transaction) => {
-      const date = new Date(transaction.createdAt);
+    const grouped = transactions.reduce((acc, { createdAt, type, amount }) => {
+      const date = new Date(createdAt);
       const monthYear = `${date.getFullYear()}-${date.getMonth() + 1}`;
 
       if (!acc[monthYear]) {
-        acc[monthYear] = {
-          transactions: [],
-          totalCredited: 0,
-          totalSpent: 0,
-        };
+        acc[monthYear] = { transactions: [], totalCredited: 0, totalSpent: 0 };
       }
 
-      acc[monthYear].transactions.push(transaction);
-
-      if (transaction.type === "credited") {
-        acc[monthYear].totalCredited += transaction.amount;
-      } else if (transaction.type === "spent") {
-        acc[monthYear].totalSpent += transaction.amount;
-      }
+      acc[monthYear].transactions.push({ createdAt, type, amount });
+      acc[monthYear][`total${type.charAt(0).toUpperCase() + type.slice(1)}`] +=
+        amount;
 
       return acc;
     }, {});
 
-    // Convert grouped transactions object to an array of { monthYear, transactions, totalCredited, totalSpent, remainingAmount } objects
-    const result = Object.keys(groupedTransactions).map((monthYear) => ({
+    const result = Object.entries(grouped).map(([monthYear, data]) => ({
       monthYear,
-      transactions: groupedTransactions[monthYear].transactions,
-      totalCredited: groupedTransactions[monthYear].totalCredited,
-      totalSpent: groupedTransactions[monthYear].totalSpent,
-      remainingAmount:
-        groupedTransactions[monthYear].totalCredited -
-        groupedTransactions[monthYear].totalSpent,
+      ...data,
+      remainingAmount: data.totalCredited - data.totalSpent,
     }));
 
     res.status(200).json(result);
   } catch (err) {
-    res.status(500).json({ message: "Failed to fetch transactions" });
+    sendResponse(res, 500, "Failed to fetch transactions.");
   }
 };
 
@@ -93,86 +83,52 @@ exports.deleteTransaction = async (req, res) => {
       _id: id,
       user: req.user._id,
     });
-
     if (!transaction) {
-      return res.status(404).json({ message: "Transaction not found" });
+      return sendResponse(res, 404, "Transaction not found.");
     }
 
     await transaction.deleteOne();
-    res.status(200).json({ message: "Transaction deleted successfully" });
+    sendResponse(res, 200, "Transaction deleted successfully.");
   } catch (err) {
-    res.status(500).json({ message: "Failed to delete transaction" });
+    sendResponse(res, 500, "Failed to delete transaction.");
   }
 };
-
-// exports.loginAuthentication = async (req, res) => {
-//   const { mobile } = req.body;
-
-//   try {
-//     let user = await UserModel.findOne({ mobile });
-
-//     if (!user) {
-//       user = new UserModel({ mobile });
-//       await user.save();
-//     }
-
-//     const token = jwt.sign({ _id: user._id }, process.env.JWT_SECRET_KEY, {
-//       expiresIn: "7d",
-//     });
-//     res.status(200).send({ token });
-//   } catch (err) {
-//     res.status(500).send({ message: "Failed to login" });
-//   }
-// };
 
 exports.registerUser = async (req, res) => {
   const { mobile, password } = req.body;
 
   try {
-    // Check if user already exists
-    let user = await UserModel.findOne({ mobile });
-    if (user) {
-      return res.status(400).send({ message: "User already exists" });
+    if (await UserModel.findOne({ mobile })) {
+      return sendResponse(res, 400, "User already exists.");
     }
 
-    // Hash the password
-    const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(password, salt);
+    const hashedPassword = await bcrypt.hash(
+      password,
+      await bcrypt.genSalt(10)
+    );
+    const newUser = new UserModel({ mobile, password: hashedPassword });
+    await newUser.save();
 
-    // Save the user
-    user = new UserModel({ mobile, password: hashedPassword });
-    await user.save();
-
-    res.status(200).send({ message: "User registered successfully" });
+    sendResponse(res, 200, "User registered successfully.");
   } catch (err) {
-    res.status(500).send({ message: "Failed to register user" });
+    sendResponse(res, 500, "Failed to register user.");
   }
 };
 
-// Function to handle user login
 exports.loginAuthentication = async (req, res) => {
   const { mobile, password } = req.body;
 
   try {
-    // Find the user by mobile
-    let user = await UserModel.findOne({ mobile });
-    if (!user) {
-      return res.status(400).send({ message: "User not found" });
+    const user = await UserModel.findOne({ mobile });
+    if (!user || !(await bcrypt.compare(password, user.password))) {
+      return sendResponse(res, 400, "Invalid credentials.");
     }
 
-    // Compare the password
-    const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) {
-      return res.status(400).send({ message: "Invalid credentials" });
-    }
-
-    // Generate a JWT token
     const token = jwt.sign({ _id: user._id }, process.env.JWT_SECRET_KEY, {
       expiresIn: "7d",
     });
-
-    res.status(200).send({ token, message: "User logged in successfully" });
+    sendResponse(res, 200, "User logged in successfully.", { token });
   } catch (err) {
-    res.status(500).send({ message: "Failed to login" });
+    sendResponse(res, 500, "Failed to login.");
   }
 };
