@@ -14,8 +14,9 @@ const corsOptions = {
     "https://reactapphost.vercel.app",
     "https://my-app-ebon-omega.vercel.app",
     "https://bookish-space-journey-jv9w6999gpv25rwg-5173.app.github.dev",
+    "https://karon.vercel.app/",
   ],
   credentials: true,
 };
 
-module.exports = corsOptions;
+export default corsOptions;

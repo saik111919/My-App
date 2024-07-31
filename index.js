@@ -1,13 +1,13 @@
-const express = require("express");
-const dotenv = require("dotenv");
-const mongoose = require("mongoose");
-const path = require("path");
-const cors = require("cors");
-const { getClientAndCollection } = require("./Src/DB/db");
-const authRoute = require("./Src/Routes/auth");
-const corsOptions = require("./Src/Common/CorsOption");
+import express from "express";
+import { config } from "dotenv";
+import mongoose from "mongoose";
+import path from "path";
+import cors from "cors";
+import { getClientAndCollection } from "./Src/DB/db.js";
+import corsOptions from "./Src/Common/CorsOption.js";
+import router from "./Src/Routes/router.js";
 
-dotenv.config();
+config();
 
 const app = express();
 const PORT = process.env.PORT || 4000;
@@ -31,7 +31,7 @@ process.on("SIGINT", () => {
 // MIDDLEWARES
 app.use(cors(corsOptions));
 app.use(express.json());
-app.use("/api", authRoute);
+app.use("/api", router);
 app.use(express.static("public"));
 
 // SERVE SPA

@@ -1,15 +1,15 @@
-const express = require("express");
-const {
+import express from "express";
+import {
   addTransactions,
-  getTransactions,
   deleteTransaction,
+  getTransactions,
+  getUserProfile,
   loginAuthentication,
   registerUser,
   updateUserDetails,
-  getUserProfile,
-} = require("../TransactionApis/TransactionApis");
-const UserModel = require("../models/UserModel");
-const { verifyToken } = require("../middleware/verifyData");
+} from "./TransactionApis/TransactionApis.js";
+import { verifyToken } from "../middleware/verifyData.js";
+
 const router = express.Router();
 
 router.post("/login", loginAuthentication);
@@ -27,4 +27,4 @@ router
   .patch(verifyToken, updateUserDetails)
   .get(verifyToken, getUserProfile);
 
-module.exports = router;
+export default router;
