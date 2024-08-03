@@ -143,7 +143,7 @@ export const loginAuthentication = async (req, res) => {
     });
     sendResponse(res, 200, "User logged in successfully.", {
       token,
-      name: user?.name || user.mobile,
+      name: user?.name || "Default Name",
     });
   } catch (err) {
     sendResponse(res, 500, "Failed to login.");
