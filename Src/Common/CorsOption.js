@@ -4,6 +4,7 @@ const corsOptions = {
     "http://localhost:5173",
     "http://localhost:4000",
     "http://localhost:5000",
+    "http://localhost:5174",
     "https://my-app-one-chi-83.vercel.app",
     "https://my-app-git-main-vsmh11.vercel.app",
     "https://my-app-vsmh11.vercel.app",
@@ -15,6 +16,7 @@ const corsOptions = {
     "https://my-app-ebon-omega.vercel.app",
     "https://bookish-space-journey-jv9w6999gpv25rwg-5173.app.github.dev",
     "https://karon.vercel.app/",
+    "*",
   ],
   credentials: true,
 };
